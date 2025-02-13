@@ -80,6 +80,7 @@ export const DraggableGrid = function <DataType extends IBaseItemType>(
         height: 0,
     })
     const [activeItemIndex, setActiveItemIndex] = useState<undefined | number>()
+    const [dragging, setDragging] = useState(false)
 
     const assessGridSize = (event: IOnLayoutEvent) => {
         if (!hadInitBlockSize) {
@@ -136,6 +137,7 @@ export const DraggableGrid = function <DataType extends IBaseItemType>(
     function onStartDrag(_: GestureResponderEvent, gestureState: PanResponderGestureState) {
         const activeItem = getActiveItem()
         if (!activeItem) return false
+        setDragging(true)
         props.onDragStart && props.onDragStart(activeItem.itemData)
         const {x0, y0, moveX, moveY} = gestureState
         const activeOrigin = blockPositions[orderMap[activeItem.key].order]
@@ -269,6 +271,7 @@ export const DraggableGrid = function <DataType extends IBaseItemType>(
 
     function setActiveBlock(itemIndex: number, item: DataType) {
         if (item.disabledDrag) return
+        setDragging(false)
 
         props.onDragItemActive && props.onDragItemActive(item)
 
@@ -401,6 +404,7 @@ export const DraggableGrid = function <DataType extends IBaseItemType>(
             <Block
                 onPress={onBlockPress.bind(null, itemIndex)}
                 onLongPress={setActiveBlock.bind(null, itemIndex, item.itemData)}
+                onPressOut={() => !dragging && onHandRelease()}
                 panHandlers={panResponder.panHandlers}
                 style={getBlockStyle(itemIndex)}
                 dragStartAnimationStyle={getDragStartAnimation(itemIndex)}
@@ -417,8 +421,9 @@ export const DraggableGrid = function <DataType extends IBaseItemType>(
                 styles.draggableGrid,
                 props.style,
                 {
-                    marginTop: props.gap || 0,
-                    marginLeft: props.gap || 0,
+                    // marginTop: props.gap || 0,
+                    // marginLeft: props.gap || 0,
+                    //we have to calculate the margin so that the grid is centered horizontally
                     height: gridHeight,
                 },
             ]}
